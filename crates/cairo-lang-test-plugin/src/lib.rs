@@ -88,7 +88,7 @@ pub fn compile_test_prepared_db(
             .collect();
     let executable_functions = find_executable_function_ids(db, main_crate_ids.clone());
     let all_tests = find_all_tests(db, test_crate_ids.clone());
-    let SierraProgramWithDebug { program: mut sierra_program, debug_info } = Arc::unwrap_or_clone(
+    let SierraProgramWithDebug { program: mut sierra_program, debug_info } = Arc::try_unwrap(
         db.get_sierra_program_for_functions(
             chain!(
                 executable_functions.clone().into_keys(),
@@ -102,7 +102,7 @@ pub fn compile_test_prepared_db(
         )
         .to_option()
         .with_context(|| "Compilation failed without any diagnostics.")?,
-    );
+    ).unwrap_or_else(|arc| (*arc).clone());
     let replacer = DebugReplacer { db };
     replacer.enrich_function_names(&mut sierra_program);
     let statements_functions =

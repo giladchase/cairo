@@ -132,9 +132,10 @@ pub fn checked_compile_to_sierra(content: &str) -> cairo_lang_sierra::program::P
     let (db, crate_id) = setup_db_and_get_crate_id(content);
 
     let SierraProgramWithDebug { program, .. } =
-        Arc::unwrap_or_clone(db.get_sierra_program(vec![crate_id]).expect(
+        Arc::try_unwrap(db.get_sierra_program(vec![crate_id]).expect(
             "`get_sierra_program` failed. run with RUST_LOG=warn (or less) to see diagnostics",
-        ));
+        ))
+        .unwrap_or_else(|arc| (*arc).clone());
     replace_sierra_ids_in_program(&db, &program)
 }
 

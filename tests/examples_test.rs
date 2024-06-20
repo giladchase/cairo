@@ -84,7 +84,8 @@ fn checked_compile_to_sierra(
         }
     }
     let SierraProgramWithDebug { program: sierra_program, .. } =
-        Arc::unwrap_or_clone(db.get_sierra_program_for_functions(requested_function_ids).unwrap());
+        Arc::try_unwrap(db.get_sierra_program_for_functions(requested_function_ids).unwrap())
+            .unwrap_or_else(|arc| (*arc).clone());
     replace_sierra_ids_in_program(&db, &sierra_program)
 }
 

@@ -538,7 +538,7 @@ impl Backend {
             let content = db
                 .file_for_url(&params.uri)
                 .and_then(|file_id| db.file_content(file_id))
-                .map(Arc::unwrap_or_clone);
+                .map(|arc| Arc::try_unwrap(arc).unwrap_or_else(|arc| (*arc).clone()));
             ProvideVirtualFileResponse { content }
         })
         .await
